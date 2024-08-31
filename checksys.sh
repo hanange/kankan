@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# 检查是否安装了 curl 和 lscpu 工具
+if ! command -v curl &> /dev/null || ! command -v lscpu &> /dev/null; then
+    echo "错误: 此脚本需要安装 curl 和 lscpu 工具。"
+    exit 1
+fi
+
 echo "=== 系统信息 ==="
 
 # 获取系统名称和版本
