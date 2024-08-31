@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 脚本版本
-SCRIPT_VERSION="1.0.0"
+SCRIPT_VERSION="0.1.0"
 NEW_SCRIPT_URL="https://example.com/new_script.sh"
 
 echo "版本: $SCRIPT_VERSION"
