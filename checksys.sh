@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # 脚本版本
-SCRIPT_VERSION="0.1.0"
-NEW_SCRIPT_URL="https://example.com/new_script.sh"
+SCRIPT_VERSION="0.1.1"
+NEW_SCRIPT_URL="https://raw.githubusercontent.com/hanange/kankan/main/checksys.sh"
 
 echo "版本: $SCRIPT_VERSION"
 
@@ -90,10 +90,7 @@ function show_all_info() {
 
 function upgrade_script() {
     echo "正在升级脚本..."
-    curl -o new_script.sh $NEW_SCRIPT_URL
-    chmod +x new_script.sh
-    echo "新脚本已下载并执行"
-    ./new_script.sh
+    wget -P /root -N --no-check-certificate "$NEW_SCRIPT_URL" && chmod 700 /root/checksys.sh && /root/checksys.sh
     exit 0
 }
 
