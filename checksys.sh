@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 脚本版本
-SCRIPT_VERSION="0.1.0"
+SCRIPT_VERSION="1.0.0"
 NEW_SCRIPT_URL="https://example.com/new_script.sh"
 
 echo "版本: $SCRIPT_VERSION"
@@ -97,48 +97,59 @@ function upgrade_script() {
     exit 0
 }
 
-# 显示选项菜单
-echo "请选择要显示的信息："
-echo "0. 显示全部信息"
-echo "1. 显示系统信息"
-echo "2. 显示CPU信息"
-echo "3. 显示系统架构和虚拟化架构"
-echo "4. 显示磁盘使用情况"
-echo "5. 显示内存使用情况"
-echo "6. 显示网络信息"
-echo "9. 升级脚本"
-echo -n "请输入选项 (0-6, 9): "
+# 主循环
+while true; do
+    # 显示选项菜单
+    echo "请选择要显示的信息："
+    echo "0. 显示全部信息"
+    echo "1. 显示系统信息"
+    echo "2. 显示 CPU 信息"
+    echo "3. 显示系统架构和虚拟化架构"
+    echo "4. 显示磁盘使用情况"
+    echo "5. 显示内存使用情况"
+    echo "6. 显示网络信息"
+    echo "9. 升级脚本"
+    echo "q. 退出"
+    echo -n "请输入选项 (0-6, 9, q): "
 
-# 读取用户输入
-read choice
+    # 读取用户输入
+    read choice
 
-# 根据用户选择执行相应的功能
-case $choice in
-    0)
-        show_all_info
-        ;;
-    1)
-        show_system_info
-        ;;
-    2)
-        show_cpu_info
-        ;;
-    3)
-        show_arch_info
-        ;;
-    4)
-        show_disk_usage
-        ;;
-    5)
-        show_memory_usage
-        ;;
-    6)
-        show_network_info
-        ;;
-    9)
-        upgrade_script
-        ;;
-    *)
-        echo "无效的选项"
-        ;;
-esac
+    # 根据用户选择执行相应的功能
+    case $choice in
+        0)
+            show_all_info
+            ;;
+        1)
+            show_system_info
+            ;;
+        2)
+            show_cpu_info
+            ;;
+        3)
+            show_arch_info
+            ;;
+        4)
+            show_disk_usage
+            ;;
+        5)
+            show_memory_usage
+            ;;
+        6)
+            show_network_info
+            ;;
+        9)
+            upgrade_script
+            ;;
+        q)
+            echo "退出脚本..."
+            break
+            ;;
+        *)
+            echo "无效的选项，请重试。"
+            ;;
+    esac
+
+    echo -e "\n按任意键返回选项菜单..."
+    read -n 1 -s
+done
