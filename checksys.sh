@@ -1,69 +1,144 @@
 #!/bin/bash
 
+# 脚本版本
+SCRIPT_VERSION="0.1.0"
+NEW_SCRIPT_URL="https://example.com/new_script.sh"
+
+echo "版本: $SCRIPT_VERSION"
+
 # 检查是否安装了 curl 和 lscpu 工具
 if ! command -v curl &> /dev/null || ! command -v lscpu &> /dev/null; then
     echo "错误: 此脚本需要安装 curl 和 lscpu 工具。"
     exit 1
 fi
 
-echo "=== 系统信息 ==="
+function show_system_info() {
+    echo "=== 系统信息 ==="
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        echo "系统名称: $NAME $VERSION"
+    else
+        echo "系统名称: 未知"
+    fi
+    echo "系统型号: $(uname -s) $(uname -r)"
+}
 
-# 获取系统名称和版本
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    echo "系统名称: $NAME $VERSION"
-else
-    echo "系统名称: 未知"
-fi
+function show_cpu_info() {
+    echo "CPU 型号: $(lscpu | grep 'Model name' | awk -F: '{print $2}' | sed 's/^ *//')"
+    echo "CPU 核心数: $(nproc)"
+}
 
-# 获取系统型号和内核版本
-echo "系统型号: $(uname -s) $(uname -r)"
+function show_arch_info() {
+    echo "系统架构: $(uname -m)"
+    echo "虚拟化架构: $(lscpu | grep 'Virtualization' | awk -F: '{print $2}' | sed 's/^ *//')"
+    if lscpu | grep -q 'aes'; then
+        echo "AES 指令支持: 已启用"
+    else
+        echo "AES 指令支持: 未启用"
+    fi
+}
 
-# 获取CPU型号和核心数
-echo "CPU 型号: $(lscpu | grep 'Model name' | awk -F: '{print $2}' | sed 's/^ *//')"
-echo "CPU 核心数: $(nproc)"
+function show_disk_usage() {
+    echo -e "\n=== 磁盘使用情况 ==="
+    disk_info=$(df -h --total | grep "total")
+    total_disk=$(echo $disk_info | awk '{print $2}')
+    used_disk=$(echo $disk_info | awk '{print $3}')
+    used_disk_percent=$(echo $disk_info | awk '{print $5}')
+    available_disk=$(echo $disk_info | awk '{print $4}')
 
-# 获取系统架构和虚拟化架构
-echo "系统架构: $(uname -m)"
-echo "虚拟化架构: $(lscpu | grep 'Virtualization' | awk -F: '{print $2}' | sed 's/^ *//')"
+    echo "总磁盘: $total_disk"
+    echo "已用磁盘: $used_disk"
+    echo "已用磁盘占比: $used_disk_percent"
+    echo "可用磁盘: $available_disk"
+}
 
-# 检查AES指令集支持情况
-if lscpu | grep -q 'aes'; then
-    echo "AES 指令支持: 已启用"
-else
-    echo "AES 指令支持: 未启用"
-fi
+function show_memory_usage() {
+    echo -e "\n=== 内存使用情况 ==="
+    free -h | awk '/Mem:/ {print "总内存: " $2 "\n已用内存: " $3 "\n可用内存: " $4}'
+    echo -e "\n=== 虚拟内存（Swap）使用情况 ==="
+    free -h | awk '/Swap:/ {print "总Swap: " $2 "\n已用Swap: " $3 "\n可用Swap: " $4}'
+}
 
-# 获取磁盘使用情况
-echo -e "\n=== 磁盘使用情况 ==="
-df -h --total | grep "total"
+function show_network_info() {
+    echo -e "\n=== 网络信息 ==="
+    tcp_cc=$(sysctl net.ipv4.tcp_congestion_control 2>/dev/null | awk '{print $3}')
+    if [ "$tcp_cc" == "bbr" ]; then
+        echo "BBR 已启用"
+    else
+        echo "BBR 未启用"
+    fi
+    echo "当前TCP加速方式: $tcp_cc"
 
-# 获取内存使用情况
-echo -e "\n=== 内存使用情况 ==="
-free -h | awk '/Mem:/ {print "总内存: " $2 "\n已用内存: " $3 "\n可用内存: " $4}'
+    ipv4=$(curl -s -4 ifconfig.co)
+    ipv6=$(curl -s -6 ifconfig.co)
 
-# 获取虚拟内存（Swap）使用情况
-echo -e "\n=== 虚拟内存（Swap）使用情况 ==="
-free -h | awk '/Swap:/ {print "总Swap: " $2 "\n已用Swap: " $3 "\n可用Swap: " $4}'
+    ipv4_location=$(curl -s https://ipinfo.io/$ipv4 | grep 'country' | awk -F: '{print $2}' | sed 's/[", ]//g')
+    ipv6_location=$(curl -s https://ipinfo.io/$ipv6 | grep 'country' | awk -F: '{print $2}' | sed 's/[", ]//g')
 
-# 检查是否已启用 BBR 及加速方式
-echo -e "\n=== BBR 启用状态 ==="
-tcp_cc=$(sysctl net.ipv4.tcp_congestion_control 2>/dev/null | awk '{print $3}')
-if [ "$tcp_cc" == "bbr" ]; then
-    echo "BBR 已启用"
-else
-    echo "BBR 未启用"
-fi
-echo "当前TCP加速方式: $tcp_cc"
+    echo "IPv4 地址: $ipv4 ($ipv4_location)"
+    echo "IPv6 地址: $ipv6 ($ipv6_location)"
+}
 
-# 获取 IPv4 和 IPv6 所在地区
-echo -e "\n=== 网络信息 ==="
+function show_all_info() {
+    show_system_info
+    show_cpu_info
+    show_arch_info
+    show_disk_usage
+    show_memory_usage
+    show_network_info
+}
 
-ipv4=$(curl -s -4 ifconfig.co)
-ipv6=$(curl -s -6 ifconfig.co)
+function upgrade_script() {
+    echo "正在升级脚本..."
+    curl -o new_script.sh $NEW_SCRIPT_URL
+    chmod +x new_script.sh
+    echo "新脚本已下载并执行"
+    ./new_script.sh
+    exit 0
+}
 
-ipv4_location=$(curl -s https://ipinfo.io/$ipv4 | grep 'country' | awk -F: '{print $2}' | sed 's/[", ]//g')
-ipv6_location=$(curl -s https://ipinfo.io/$ipv6 | grep 'country' | awk -F: '{print $2}' | sed 's/[", ]//g')
+# 显示选项菜单
+echo "请选择要显示的信息："
+echo "0. 显示全部信息"
+echo "1. 显示系统信息"
+echo "2. 显示CPU信息"
+echo "3. 显示系统架构和虚拟化架构"
+echo "4. 显示磁盘使用情况"
+echo "5. 显示内存使用情况"
+echo "6. 显示网络信息"
+echo "9. 升级脚本"
+echo -n "请输入选项 (0-6, 9): "
 
-echo "IPv4 地址: $ipv4 ($ipv4_location)"
-echo "IPv6 地址: $ipv6 ($ipv6_location)"
+# 读取用户输入
+read choice
+
+# 根据用户选择执行相应的功能
+case $choice in
+    0)
+        show_all_info
+        ;;
+    1)
+        show_system_info
+        ;;
+    2)
+        show_cpu_info
+        ;;
+    3)
+        show_arch_info
+        ;;
+    4)
+        show_disk_usage
+        ;;
+    5)
+        show_memory_usage
+        ;;
+    6)
+        show_network_info
+        ;;
+    9)
+        upgrade_script
+        ;;
+    *)
+        echo "无效的选项"
+        ;;
+esac
