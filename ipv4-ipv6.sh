@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# 版本：0.0.1
+# 版本：0.0.2
 
-# 功能描述：一键控制 IPv4/IPv6 的优先级和状态
+# 功能描述：一键控制 IPv4/IPv6 的优先级和状态，并提供脚本升级功能
 # 兼容性：Debian、Ubuntu、CentOS
 
 # 检查是否安装了 curl
@@ -62,6 +62,13 @@ function test_priority() {
     fi
 }
 
+# 升级脚本
+function upgrade_script() {
+    echo "正在升级脚本..."
+    wget -P /root -N --no-check-certificate "https://raw.githubusercontent.com/hanange/kankan/main/ipv4-ipv6.sh" && chmod 700 /root/ipv4-ipv6.sh && /root/ipv4-ipv6.sh
+    exit 0
+}
+
 # 主菜单循环
 while true; do
     echo "请选择一个选项:"
@@ -70,8 +77,9 @@ while true; do
     echo "3. 设置 IPv4 优先"
     echo "4. 设置 IPv6 优先"
     echo "5. 测试网络优先级"
-    echo "99. 退出脚本"
-    echo -n "请输入选项 (1-5, 99): "
+    echo "9. 升级脚本"
+    echo "q. 退出脚本"
+    echo -n "请输入选项 (1-5, 9, q): "
 
     # 读取用户输入
     read choice
@@ -92,7 +100,10 @@ while true; do
         5)
             test_priority
             ;;
-        99)
+        9)
+            upgrade_script
+            ;;
+        q)
             echo "退出脚本..."
             break
             ;;
@@ -101,6 +112,7 @@ while true; do
             ;;
     esac
 
+    # 回到主菜单
     echo -e "\n按任意键返回选项菜单..."
     read -n 1 -s
 done
