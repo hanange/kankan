@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 版本：0.0.2
+# 版本：0.0.3
 
 # 功能描述：一键控制 IPv4/IPv6 的优先级和状态，并提供脚本升级功能
 # 兼容性：Debian、Ubuntu、CentOS
@@ -14,14 +14,40 @@ then
     exit 1
 fi
 
+# 重新载入 sysctl 配置
+function reload_sysctl() {
+    echo "正在重新载入 sysctl 配置..."
+    sudo sysctl -p
+    echo "sysctl 配置已重新载入。"
+}
+
+# 询问是否重新载入 sysctl 配置
+function ask_reload_sysctl() {
+    echo -n "是否要重新载入 sysctl 配置？[Y/n]: "
+    read -r reload_choice
+    reload_choice=${reload_choice:-y}  # 默认选择为 'y'
+
+    case $reload_choice in
+        [Yy]* )
+            reload_sysctl
+            ;;
+        [Nn]* )
+            echo "已选择不重新载入 sysctl 配置。"
+            ;;
+        * )
+            echo "无效输入，默认重新载入 sysctl 配置。"
+            reload_sysctl
+            ;;
+    esac
+}
+
 # 禁用 IPv6
 function disable_ipv6() {
     echo "正在禁用 IPv6..."
     sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
     sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
     sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=1
-    sudo sysctl -p
-    echo "IPv6 已禁用。"
+    ask_reload_sysctl
 }
 
 # 启用 IPv6
@@ -30,8 +56,7 @@ function enable_ipv6() {
     sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
     sudo sysctl -w net.ipv6.conf.default.disable_ipv6=0
     sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
-    sudo sysctl -p
-    echo "IPv6 已启用。"
+    ask_reload_sysctl
 }
 
 # 设置 IPv4 优先
