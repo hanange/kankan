@@ -17,20 +17,29 @@ function query_dns() {
 # 修改IPv4 DNS
 function modify_ipv4_dns() {
     echo "请选择要使用的IPv4 DNS:"
-    echo "1. Cloudflare (1.1.1.1)"
-    echo "2. Google (8.8.8.8)"
-    read -p "请输入选项 (1 或 2): " dns_choice
+    echo "1. Cloudflare (1.1.1.1, 1.0.0.1)"
+    echo "2. Google (8.8.8.8, 8.8.4.4)"
+    echo "3. 阿里云 (223.5.5.5, 223.6.6.6)"
+    read -p "请输入选项 (1, 2 或 3): " dns_choice
 
     case $dns_choice in
         1)
             sudo sed -i '/^nameserver/ d' /etc/resolv.conf
             echo "nameserver 1.1.1.1" | sudo tee -a /etc/resolv.conf
-            echo "已将 IPv4 DNS 修改为 Cloudflare (1.1.1.1)"
+            echo "nameserver 1.0.0.1" | sudo tee -a /etc/resolv.conf
+            echo "已将 IPv4 DNS 修改为 Cloudflare (1.1.1.1, 1.0.0.1)"
             ;;
         2)
             sudo sed -i '/^nameserver/ d' /etc/resolv.conf
             echo "nameserver 8.8.8.8" | sudo tee -a /etc/resolv.conf
-            echo "已将 IPv4 DNS 修改为 Google (8.8.8.8)"
+            echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf
+            echo "已将 IPv4 DNS 修改为 Google (8.8.8.8, 8.8.4.4)"
+            ;;
+        3)
+            sudo sed -i '/^nameserver/ d' /etc/resolv.conf
+            echo "nameserver 223.5.5.5" | sudo tee -a /etc/resolv.conf
+            echo "nameserver 223.6.6.6" | sudo tee -a /etc/resolv.conf
+            echo "已将 IPv4 DNS 修改为 阿里云 (223.5.5.5, 223.6.6.6)"
             ;;
         *)
             echo "无效的选项。"
@@ -41,18 +50,23 @@ function modify_ipv4_dns() {
 # 修改IPv6 DNS
 function modify_ipv6_dns() {
     echo "请选择要使用的IPv6 DNS:"
-    echo "1. Cloudflare (2606:4700:4700::1111)"
-    echo "2. Google (2001:4860:4860::8888)"
-    read -p "请输入选项 (1 或 2): " dns_choice
+    echo "1. Cloudflare (2606:4700:4700::1111, 2606:4700:4700::1001)"
+    echo "2. Google (2001:4860:4860::8888, 2001:4860:4860::8844)"
+    echo "3. 阿里云 (2400:3200::1, 2400:3200:baba::1)"
+    read -p "请输入选项 (1, 2 或 3): " dns_choice
 
     case $dns_choice in
         1)
-            sudo resolvectl dns eth0 2606:4700:4700::1111
-            echo "已将 IPv6 DNS 修改为 Cloudflare (2606:4700:4700::1111)"
+            sudo resolvectl dns eth0 2606:4700:4700::1111 2606:4700:4700::1001
+            echo "已将 IPv6 DNS 修改为 Cloudflare (2606:4700:4700::1111, 2606:4700:4700::1001)"
             ;;
         2)
-            sudo resolvectl dns eth0 2001:4860:4860::8888
-            echo "已将 IPv6 DNS 修改为 Google (2001:4860:4860::8888)"
+            sudo resolvectl dns eth0 2001:4860:4860::8888 2001:4860:4860::8844
+            echo "已将 IPv6 DNS 修改为 Google (2001:4860:4860::8888, 2001:4860:4860::8844)"
+            ;;
+        3)
+            sudo resolvectl dns eth0 2400:3200::1 2400:3200:baba::1
+            echo "已将 IPv6 DNS 修改为 阿里云 (2400:3200::1, 2400:3200:baba::1)"
             ;;
         *)
             echo "无效的选项。"
