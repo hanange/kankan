@@ -15,3 +15,11 @@
 脚本如下：
 
 ``wget -P /root -N --no-check-certificate "https://raw.githubusercontent.com/hanange/kankan/main/ipv4-ipv6.sh" && chmod 700 /root/ipv4-ipv6.sh && /root/ipv4-ipv6.sh``
+
+### 脚本checkdns.sh
+
+该脚本实现dns查询和修改。
+
+脚本如下：
+
+``wget -P /root -N --no-check-certificate "https://raw.githubusercontent.com/hanange/kankan/main/checkdns.sh" && chmod 700 /root/checkdns.sh && /root/checkdns.sh``
