@@ -1,9 +1,32 @@
 #!/bin/bash
 
 # 脚本版本
-SCRIPT_VERSION="0.0.1"
+SCRIPT_VERSION="0.0.3"
 NEW_SCRIPT_URL="https://raw.githubusercontent.com/hanange/kankan/main/checkdns.sh"
 echo "版本: $SCRIPT_VERSION"
+
+# 刷新 DNS 配置
+function refresh_dns() {
+    echo "正在刷新 DNS 配置..."
+    
+    if command -v resolvectl &> /dev/null; then
+        sudo resolvectl flush-caches
+        echo "已刷新 DNS 缓存 (使用 resolvectl)。"
+    elif command -v resolvconf &> /dev/null; then
+        sudo resolvconf -u
+        echo "已使用 resolvconf 刷新 DNS。"
+    else
+        echo "重启网络服务以确保 DNS 生效..."
+        # 根据不同系统类型重启网络
+        if [ -f /etc/debian_version ]; then
+            sudo systemctl restart networking
+        elif [ -f /etc/centos-release ]; then
+            sudo systemctl restart NetworkManager
+        else
+            echo "无法确定系统类型，请手动重启网络服务。"
+        fi
+    fi
+}
 
 # 显示当前DNS设置
 function query_dns() {
@@ -45,6 +68,8 @@ function modify_ipv4_dns() {
             echo "无效的选项。"
             ;;
     esac
+
+    refresh_dns
 }
 
 # 修改IPv6 DNS
@@ -72,6 +97,8 @@ function modify_ipv6_dns() {
             echo "无效的选项。"
             ;;
     esac
+
+    refresh_dns
 }
 
 # DNS 修改菜单
