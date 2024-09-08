@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 脚本版本
-SCRIPT_VERSION="0.0.3"
+SCRIPT_VERSION="0.1.0"
 NEW_SCRIPT_URL="https://raw.githubusercontent.com/hanange/kankan/main/checkdns.sh"
 echo "版本: $SCRIPT_VERSION"
 
@@ -101,6 +101,33 @@ function modify_ipv6_dns() {
     refresh_dns
 }
 
+# 修改系统时区
+function modify_timezone() {
+    echo "请选择要修改的时区:"
+    echo "1. 中国时区 (Asia/Shanghai)"
+    echo "2. 美国时区 (America/New_York)"
+    echo "3. 英国时区 (Europe/London)"
+    read -p "请输入选项 (1, 2 或 3): " tz_choice
+
+    case $tz_choice in
+        1)
+            sudo timedatectl set-timezone Asia/Shanghai
+            echo "已将系统时区修改为 中国时区 (Asia/Shanghai)"
+            ;;
+        2)
+            sudo timedatectl set-timezone America/New_York
+            echo "已将系统时区修改为 美国时区 (America/New_York)"
+            ;;
+        3)
+            sudo timedatectl set-timezone Europe/London
+            echo "已将系统时区修改为 英国时区 (Europe/London)"
+            ;;
+        *)
+            echo "无效的选项。"
+            ;;
+    esac
+}
+
 # DNS 修改菜单
 function modify_dns() {
     echo "请选择要修改的DNS类型:"
@@ -133,9 +160,10 @@ while true; do
     echo "=== VPS DNS 管理脚本 ==="
     echo "1. 查询 DNS 设置"
     echo "2. 修改 DNS 设置"
-    echo "3. 升级脚本"
+    echo "3. 修改系统时区"
+    echo "4. 升级脚本"
     echo "q. 退出脚本"
-    read -p "请输入选项 (1-3, q): " choice
+    read -p "请输入选项 (1-4, q): " choice
 
     case $choice in
         1)
@@ -145,6 +173,9 @@ while true; do
             modify_dns
             ;;
         3)
+            modify_timezone
+            ;;
+        4)
             upgrade_script
             ;;
         q)
